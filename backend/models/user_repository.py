@@ -95,6 +95,27 @@ class UserRepository:
             raise Exception(f"Failed to update user: {str(e)}")
 
     @staticmethod
+    def update_last_login(user_id: str) -> bool:
+        """
+        Update user's last login timestamp
+        
+        Args:
+            user_id: User ID
+            
+        Returns:
+            True if update successful
+        """
+        try:
+            collection = UserRepository.get_collection()
+            result = collection.update_one(
+                {"_id": ObjectId(user_id)},
+                {"$set": {"updated_at": datetime.utcnow()}}
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            raise Exception(f"Failed to update last login: {str(e)}")
+
+    @staticmethod
     def delete(user_id: str) -> bool:
         """
         Delete user

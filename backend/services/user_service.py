@@ -120,37 +120,37 @@ class UserService:
         Raises:
             Exception: If login fails
         """
-        try:
-            # Find user by email
-            user = UserRepository.find_by_email(email)
-            if not user:
-                return {
-                    "success": False,
-                    "message": "Invalid email or password",
-                    "user": None,
-                    "token": None
-                }
-
-            # Verify password
-            if not PasswordHandler.verify_password(password, user.password_hash):
-                return {
-                    "success": False,
-                    "message": "Invalid email or password",
-                    "user": None,
-                    "token": None
-                }
-
-            # Update last login
-            UserRepository.update_last_login(user.id)
-
-            # Generate token
-            token = JWTHandler.generate_token(user.id, user.email, user.role)
-
+        # Find user by email
+        user = UserRepository.find_by_email(email)
+        if not user:
             return {
-                "success": True,
-                "message": "Login successful",
-              Generate token
-            token = JWTHandler.generate_token(user.id, user.email, role="user"
+                "success": False,
+                "message": "Invalid email or password",
+                "user": None,
+                "token": None
+            }
+
+        # Verify password
+        if not PasswordHandler.verify_password(password, user.password_hash):
+            return {
+                "success": False,
+                "message": "Invalid email or password",
+                "user": None,
+                "token": None
+            }
+
+        # Update last login
+        UserRepository.update_last_login(user.id)
+
+        # Generate token
+        token = JWTHandler.generate_token(user.id, user.email, role="user")
+
+        return {
+            "success": True,
+            "message": "Login successful",
+            "user": user.to_response(),
+            "token": token
+        }
 
     @staticmethod
     def verify_token(token: str) -> Dict:

@@ -3,6 +3,8 @@ import jwt
 import bcrypt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from flask import request, jsonify
+from functools import wraps
 
 load_dotenv()
 
@@ -118,3 +120,33 @@ class PasswordHandler:
             return bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8'))
         except Exception as e:
             raise Exception(f"Password verification failed: {str(e)}")
+
+
+def token_required(f):
+    """Decorator to require valid JWT token"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        
+        if not token:
+            return jsonify({
+                "success": False,
+                "message": "Token is missing"
+            }), 401
+
+        try:
+            # Remove 'Bearer ' prefix if present
+            if token.startswith('Bearer '):
+                token = token[7:]
+            
+            payload = JWTHandler.verify_token(token)
+            request.user_id = payload['user_id']
+            request.user_email = payload['email']
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({
+                "success": False,
+                "message": str(e)
+            }), 401
+
+    return decorated

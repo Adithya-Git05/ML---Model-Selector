@@ -69,7 +69,7 @@ def test_registration():
     print_header("User Registration")
     
     data = {
-        "email": f"test_{int(datetime.now().timestamp())}@example.com",
+        "email": f"test_{int(datetime.now().timestamp())}@gmail.com",
         "password": "TestPassword123",
         "first_name": "Test",
         "last_name": "User"

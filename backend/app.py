@@ -2,9 +2,8 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from functools import wraps
 from database.connection import db
-from utils.auth_utils import JWTHandler
+from utils.auth_utils import JWTHandler, token_required
 from routes.auth_routes import auth_bp
 from routes.user_routes import user_bp
 
@@ -17,36 +16,6 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 # Enable CORS
 allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
 CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
-
-
-def token_required(f):
-    """Decorator to require valid JWT token"""
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = request.headers.get('Authorization')
-        
-        if not token:
-            return jsonify({
-                "success": False,
-                "message": "Token is missing"
-            }), 401
-
-        try:
-            # Remove 'Bearer ' prefix if present
-            if token.startswith('Bearer '):
-                token = token[7:]
-            
-            payload = JWTHandler.verify_token(token)
-            request.user_id = payload['user_id']
-            request.user_email = payload['email']
-            return f(*args, **kwargs)
-        except Exception as e:
-            return jsonify({
-                "success": False,
-                "message": str(e)
-            }), 401
-
-    return decorated
 
 
 # Register blueprints
